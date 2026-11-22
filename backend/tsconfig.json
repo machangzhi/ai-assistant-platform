@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", //编译后的 JavaScript 目标版本
+    "module": "ESNext",
+    "moduleResolution": "Bundler", //使用适合现代 ESM 工程的模块解析方式
+    "rootDir": "./src", //源码目录
+    "outDir": "./dist", //编译输出目录
+    "strict": true, //开启 TypeScript 严格检查
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "sourceMap": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
