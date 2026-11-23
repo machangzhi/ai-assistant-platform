@@ -1,11 +1,15 @@
 
 import { callDeepSeek } from '../ai/models/deepseek.js';
 
-export async function chatWithAI(message: string) {
-    const messages = [
-        {
-            role: 'system' as const,
-            content: `
+export interface ChatMessage {
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+}
+
+export async function chatWithAI(messages: ChatMessage[]) {
+    const systemMessage: ChatMessage = {
+        role: 'system',
+        content: `
                 你是一个 AI 技术助手，通过 DeepSeek API 提供服务。
 
                 你的主要职责是帮助用户解决前端、后端和人工智能应用开发问题。
@@ -17,14 +21,12 @@ export async function chatWithAI(message: string) {
                 4. 回答技术问题时，尽量解释原理并提供可运行的代码。
                 5. 不要编造自己的知识截止日期或技术能力。
             `
-        },
-        {
-            role: 'user' as const,
-            content: message
-        }
-    ];
+    };
 
-    const result = await callDeepSeek(messages);
+    const result = await callDeepSeek([
+        systemMessage,
+        ...messages
+    ]);
 
     return {
         answer: result.choices[0]?.message.content ?? '',
