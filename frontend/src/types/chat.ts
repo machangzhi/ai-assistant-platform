@@ -13,3 +13,11 @@ export interface Conversation {
   messages: ChatMessage[]
   createdAt: number
 }
+
+export type GenerationStatus =
+  | 'idle'
+  | 'connecting'
+  | 'streaming'
+  | 'completed'
+  | 'stopped'
+  | 'error'

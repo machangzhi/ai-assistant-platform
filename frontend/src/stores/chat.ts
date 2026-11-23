@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { Conversation, ChatMessage } from '../types/chat'
+import type { Conversation, ChatMessage, GenerationStatus } from '../types/chat'
 import { streamChat } from '../api/chat'
 
 export const useChatStore = defineStore('chat', () => {
@@ -12,6 +12,7 @@ export const useChatStore = defineStore('chat', () => {
 
   // 是否正在生成
   const isGenerating = ref(false)
+  const generationStatus = ref<GenerationStatus>('idle')
 
   // 当前会话
   const currentConversation = computed(() => {
@@ -86,6 +87,7 @@ export const useChatStore = defineStore('chat', () => {
       conversation.messages[conversation.messages.length - 1]
 
     isGenerating.value = true
+    generationStatus.value = 'connecting'
     abortController = new AbortController()
 
     try {
@@ -98,16 +100,20 @@ export const useChatStore = defineStore('chat', () => {
         messages,
         signal: abortController.signal,
         onMessage(chunk) {
+          generationStatus.value = 'streaming'
           reactiveAssistantMessage.content += chunk
         },
       })
+      // 正常结束
+      generationStatus.value = 'completed'
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        return
+        generationStatus.value = 'stopped'
+      } else {
+        generationStatus.value = 'error'
+        reactiveAssistantMessage.content ||= 'AI 请求失败，请稍后重试。'
+        console.error('AI 请求失败：', error)
       }
-
-      reactiveAssistantMessage.content ||= 'AI 请求失败，请稍后重试。'
-      console.error('AI 请求失败：', error)
     } finally {
       reactiveAssistantMessage.loading = false
       isGenerating.value = false
@@ -129,5 +135,6 @@ export const useChatStore = defineStore('chat', () => {
     switchConversation,
     sendMessage,
     stopGeneration,
+    generationStatus
   }
 })
