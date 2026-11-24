@@ -1,4 +1,3 @@
-
 interface StreamChunk {
   content: string
 }
@@ -58,8 +57,8 @@ export async function streamChat(options: StreamOptions) {
       for (const event of events) {
         const data = event
           .split('\n')
-          .filter(line => line.startsWith('data:'))
-          .map(line => line.slice(5).trim())
+          .filter((line) => line.startsWith('data:'))
+          .map((line) => line.slice(5).trim())
           .join('\n')
 
         if (!data) continue

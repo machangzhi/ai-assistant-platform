@@ -32,11 +32,7 @@ async function handleCopy(event: MouseEvent) {
 </script>
 
 <template>
-  <div
-    class="markdown-body"
-    v-html="renderedContent"
-    @click="handleCopy"
-  />
+  <div class="markdown-body" v-html="renderedContent" @click="handleCopy" />
 </template>
 
 <style scoped>

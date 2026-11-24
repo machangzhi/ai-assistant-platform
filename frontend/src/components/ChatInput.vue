@@ -28,20 +28,11 @@ function handleSend() {
     />
 
     <div class="actions">
-      <el-button
-        v-if="chatStore.isGenerating"
-        type="danger"
-        @click="chatStore.stopGeneration"
-      >
+      <el-button v-if="chatStore.isGenerating" type="danger" @click="chatStore.stopGeneration">
         停止生成
       </el-button>
 
-      <el-button
-        v-else
-        type="primary"
-        :disabled="!input.trim()"
-        @click="handleSend"
-      >
+      <el-button v-else type="primary" :disabled="!input.trim()" @click="handleSend">
         发送
       </el-button>
     </div>

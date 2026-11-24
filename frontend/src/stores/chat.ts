@@ -1,11 +1,12 @@
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { Conversation, ChatMessage, GenerationStatus } from '../types/chat'
 import { streamChat } from '../api/chat'
+import { getStorage, setStorage } from '../utils/storage'
 
 export const useChatStore = defineStore('chat', () => {
   // 所有会话
-  const conversations = ref<Conversation[]>([])
+  const conversations = ref<Conversation[]>(getStorage<Conversation[]>([]))
 
   // 当前会话 ID
   const currentConversationId = ref<string | null>(null)
@@ -16,10 +17,17 @@ export const useChatStore = defineStore('chat', () => {
 
   // 当前会话
   const currentConversation = computed(() => {
-    return conversations.value.find(
-      item => item.id === currentConversationId.value
-    ) ?? null
+    return conversations.value.find((item) => item.id === currentConversationId.value) ?? null
   })
+  watch(
+    conversations,
+    (newValue) => {
+      setStorage(newValue)
+    },
+    {
+      deep: true,
+    },
+  )
 
   // 创建会话
   function createConversation() {
@@ -40,6 +48,31 @@ export const useChatStore = defineStore('chat', () => {
   function switchConversation(id: string) {
     currentConversationId.value = id
   }
+  /**
+   * 删除指定会话
+   */
+  function deleteConversation(id: string) {
+    const index = conversations.value.findIndex((item) => item.id === id)
+
+    if (index === -1) return
+
+    const isCurrent = currentConversationId.value === id
+
+    conversations.value.splice(index, 1)
+
+    if (isCurrent) {
+      currentConversationId.value = conversations.value[0]?.id ?? null
+    }
+  }
+  /**
+   * 清空所有会话
+   */
+  function clearConversations() {
+    if (isGenerating.value) return
+
+    conversations.value = []
+    currentConversationId.value = null
+  }
 
   let abortController: AbortController | null = null
 
@@ -57,7 +90,6 @@ export const useChatStore = defineStore('chat', () => {
     if (!conversation) {
       throw new Error('获取当前会话失败')
     }
-
 
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -83,8 +115,7 @@ export const useChatStore = defineStore('chat', () => {
     conversation.messages.push(assistantMessage)
 
     // 从响应式数组中重新获取消息对象
-    const reactiveAssistantMessage =
-      conversation.messages[conversation.messages.length - 1]
+    const reactiveAssistantMessage = conversation.messages[conversation.messages.length - 1]
 
     isGenerating.value = true
     generationStatus.value = 'connecting'
@@ -92,8 +123,8 @@ export const useChatStore = defineStore('chat', () => {
 
     try {
       const messages = conversation.messages
-        .filter(item => item.content.trim())
-        .filter(item => item.id !== assistantMessage.id)
+        .filter((item) => item.content.trim())
+        .filter((item) => item.id !== assistantMessage.id)
         .map(({ role, content }) => ({ role, content }))
 
       await streamChat({
@@ -133,8 +164,10 @@ export const useChatStore = defineStore('chat', () => {
     isGenerating,
     createConversation,
     switchConversation,
+    deleteConversation,
+    clearConversations,
     sendMessage,
     stopGeneration,
-    generationStatus
+    generationStatus,
   }
 })

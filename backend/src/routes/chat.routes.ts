@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import { chat, streamChat } from '../controllers/chat.controller.js';
+import { Router } from 'express'
+import { chat, streamChat } from '../controllers/chat.controller.js'
 
-const router = Router();
+const router = Router()
 
-router.post('/', chat);
-router.post('/stream', streamChat);
+router.post('/', chat)
+router.post('/stream', streamChat)
 
-export default router;
+export default router

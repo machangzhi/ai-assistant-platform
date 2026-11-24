@@ -15,9 +15,4 @@ export interface Conversation {
 }
 
 export type GenerationStatus =
-  | 'idle'
-  | 'connecting'
-  | 'streaming'
-  | 'completed'
-  | 'stopped'
-  | 'error'
+  'idle' | 'connecting' | 'streaming' | 'completed' | 'stopped' | 'error'

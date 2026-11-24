@@ -48,10 +48,7 @@ function handleScroll() {
 
   if (!container) return
 
-  const distance =
-    container.scrollHeight -
-    container.scrollTop -
-    container.clientHeight
+  const distance = container.scrollHeight - container.scrollTop - container.clientHeight
 
   isNearBottom.value = distance < 80
 }
@@ -65,8 +62,12 @@ function handleScroll() {
     </div>
 
     <div v-else class="message-list" ref="messageListRef" @scroll="handleScroll">
-      <div v-for="message in chatStore.currentConversation.messages" :key="message.id" class="message"
-        :class="message.role">
+      <div
+        v-for="message in chatStore.currentConversation.messages"
+        :key="message.id"
+        class="message"
+        :class="message.role"
+      >
         <strong>
           {{ message.role === 'user' ? '你' : 'AI 助手' }}
         </strong>
