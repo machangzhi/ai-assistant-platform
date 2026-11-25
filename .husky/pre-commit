@@ -1,1 +1,4 @@
+# Git 提交前钩子（由 Husky 调用）
+# 作用：对暂存区中的文件执行 lint-staged 配置的任务（目前是用 Prettier 格式化），
+# 保证入库代码风格一致。若格式化失败，本次提交会被阻止。
 npx lint-staged

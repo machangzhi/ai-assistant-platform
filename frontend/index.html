@@ -1,13 +1,18 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- 统一使用 UTF-8，避免中文乱码 -->
     <meta charset="UTF-8" />
+    <!-- 站点图标 -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- 移动端视口配置：宽度跟随设备、初始缩放 1.0 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
   </head>
   <body>
+    <!-- Vue 应用的挂载节点（见 src/main.ts 中的 app.mount('#app')） -->
     <div id="app"></div>
+    <!-- 以 ES Module 方式加载前端入口 -->
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

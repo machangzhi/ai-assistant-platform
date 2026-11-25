@@ -1,4 +1,15 @@
 <script setup lang="ts">
+/**
+ * Markdown 渲染组件
+ * ------------------------------------------------------------
+ * 将 Markdown 文本渲染为 HTML（v-html），并支持代码块"一键复制"。
+ *
+ * 安全说明：
+ * - HTML 由 utils/markdown.ts 中的 DOMPurify.sanitize 清理过，
+ *   因此这里可以安全使用 v-html；
+ * - 不要把未经清洗的用户内容直接传给 v-html。
+ */
+
 import { computed } from 'vue'
 import { renderMarkdown } from '../utils/markdown'
 
@@ -6,10 +17,17 @@ const props = defineProps<{
   content: string
 }>()
 
+// 内容变化时重新渲染（computed 会缓存，避免重复解析）
 const renderedContent = computed(() => {
   return renderMarkdown(props.content)
 })
 
+/**
+ * 复制代码块内容
+ * 使用"事件委托"：只在容器上监听一次点击，
+ * 通过 closest 判断是否点中了复制按钮，
+ * 避免为每个代码块单独绑定事件（尤其流式渲染时 DOM 频繁变化）。
+ */
 async function handleCopy(event: MouseEvent) {
   const target = event.target as HTMLElement
 
@@ -17,6 +35,7 @@ async function handleCopy(event: MouseEvent) {
 
   if (!button) return
 
+  // 从按钮向上找到代码块容器，再取出 code 文本
   const codeBlock = button.closest('.code-block')
   const code = codeBlock?.querySelector('code')?.textContent
 
@@ -24,6 +43,7 @@ async function handleCopy(event: MouseEvent) {
 
   try {
     await navigator.clipboard.writeText(code)
+    // 给用户即时反馈（简单起见不做过期还原）
     button.textContent = '已复制'
   } catch (error) {
     console.error('复制失败：', error)
@@ -32,6 +52,7 @@ async function handleCopy(event: MouseEvent) {
 </script>
 
 <template>
+  <!-- v-html 内容已在上游完成 XSS 清理 -->
   <div class="markdown-body" v-html="renderedContent" @click="handleCopy" />
 </template>
 
@@ -43,6 +64,7 @@ async function handleCopy(event: MouseEvent) {
   word-break: break-word;
 }
 
+/* 标题层级间距 */
 .markdown-body :deep(h1),
 .markdown-body :deep(h2),
 .markdown-body :deep(h3) {
@@ -54,6 +76,7 @@ async function handleCopy(event: MouseEvent) {
   margin: 10px 0;
 }
 
+/* 行内代码与代码块的通用样式 */
 .markdown-body :deep(pre) {
   padding: 16px;
   overflow-x: auto;
@@ -66,6 +89,7 @@ async function handleCopy(event: MouseEvent) {
   font-family: Consolas, Monaco, monospace;
 }
 
+/* 仅行内代码加背景，避免和代码块重复 */
 .markdown-body :deep(:not(pre) > code) {
   padding: 2px 5px;
   background: var(--el-fill-color-light);
@@ -87,6 +111,8 @@ async function handleCopy(event: MouseEvent) {
   padding: 8px 12px;
   border: 1px solid var(--el-border-color);
 }
+
+/* 自定义代码块：工具栏 + 复制按钮（由 utils/markdown.ts 生成对应 DOM） */
 .markdown-body :deep(.code-block) {
   margin: 16px 0;
   overflow: hidden;
@@ -118,6 +144,7 @@ async function handleCopy(event: MouseEvent) {
   border-color: #999;
 }
 
+/* 代码块内部不再重复留白与背景（由外层 .code-block 控制） */
 .markdown-body :deep(.code-block pre) {
   margin: 0;
   padding: 16px;

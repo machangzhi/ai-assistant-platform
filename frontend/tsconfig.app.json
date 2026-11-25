@@ -1,15 +1,20 @@
 {
+  // 继承 Vue 官方的 DOM 环境基础配置（包含浏览器 lib、Vue 相关类型等）
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "compilerOptions": {
+    // 增量构建缓存文件位置，加快后续类型检查
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    // 引入 Vite 客户端类型（如 import.meta.env、静态资源导入声明）
     "types": ["vite/client"],
+    // 允许导入非 TS 扩展名的文件（如 .vue、.css）
     "allowArbitraryExtensions": true,
 
-    /* Linting */
+    /* Linting：严格检查未使用变量、switch 穿透等，减少低级错误 */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
+  // 业务代码范围：src 下的 TS/TSX/Vue 文件
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

@@ -1,6 +1,18 @@
+/**
+ * 消息控制器
+ * ------------------------------------------------------------
+ * 以会话为父资源，提供消息的保存、查询与清空。
+ * Service 层通过抛出带语义的错误信息表达业务异常，
+ * 这里统一映射为对应的 HTTP 状态码。
+ */
+
 import type { Request, Response } from 'express'
 import * as messageService from '../services/message.service.js'
 
+/**
+ * 从路由参数中提取会话 ID
+ * @returns 合法 ID 字符串；非法时返回 null
+ */
 function getConversationId(req: Request): string | null {
   const id = req.params.id
 
@@ -13,6 +25,8 @@ function getConversationId(req: Request): string | null {
 
 /**
  * 保存消息
+ * POST /api/conversations/:id/messages
+ * 请求体：{ role: 'user' | 'assistant', content: string }
  */
 export async function create(req: Request, res: Response) {
   try {
@@ -40,6 +54,9 @@ export async function create(req: Request, res: Response) {
       data: message,
     })
   } catch (error) {
+    // 按业务错误类型映射状态码：
+    // - 会话不存在 -> 404
+    // - 内容为空 / 角色不支持 -> 400
     if (error instanceof Error) {
       if (error.message === '会话不存在') {
         res.status(404).json({
@@ -68,7 +85,8 @@ export async function create(req: Request, res: Response) {
 }
 
 /**
- * 获取消息列表
+ * 查询消息列表
+ * GET /api/conversations/:id/messages
  */
 export async function list(req: Request, res: Response) {
   try {
@@ -108,7 +126,8 @@ export async function list(req: Request, res: Response) {
 }
 
 /**
- * 清空消息
+ * 清空会话消息
+ * DELETE /api/conversations/:id/messages
  */
 export async function clear(req: Request, res: Response) {
   try {

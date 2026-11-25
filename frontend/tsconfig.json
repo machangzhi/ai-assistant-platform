@@ -1,4 +1,6 @@
 {
+  // 根 tsconfig 只做"项目引用"入口，本身不包含文件。
+  // `tsc -b` 会按照 references 分别构建 app（业务代码）与 node（构建配置）。
   "files": [],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
 }
