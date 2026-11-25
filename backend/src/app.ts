@@ -6,6 +6,9 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import userRoutes from './routes/user.routes.js'
 import chatRoutes from './routes/chat.routes.js'
+import databaseRoutes from './routes/database.routes'
+import conversationRoutes from './routes/conversation.routes'
+import messageRoutes from './routes/message.routes'
 import { errorHandler } from './middlewares/error.middleware.js'
 
 const app = express()
@@ -37,11 +40,16 @@ app.get('/api/health', (req, res) => {
     },
   })
 })
-
 // 注册用户路由
 app.use('/api/users', userRoutes)
 // 注册 AI 对话接口
 app.use('/api/chat', chatRoutes)
+// 注册数据库路由
+app.use('/api/database', databaseRoutes)
+// 注册消息路由
+app.use('/api/conversations', messageRoutes)
+// 注册会话路由
+app.use('/api/conversations', conversationRoutes)
 // 其他 app.use 和路由注册之后，最后注册错误处理中间件
 app.use(errorHandler)
 // 启动服务

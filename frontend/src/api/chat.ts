@@ -1,30 +1,120 @@
+export interface ConversationDTO {
+  id: string
+  title: string
+  created_at: string
+  updated_at: string
+}
+
+interface ApiResponse<T> {
+  code: number
+  message: string
+  data: T
+}
+
 interface StreamChunk {
   content: string
 }
 
-interface StreamMessage {
-  role: 'user' | 'assistant'
-  content: string
-}
-
 interface StreamOptions {
-  messages: StreamMessage[]
+  conversationId: string
+  content: string
   signal?: AbortSignal
   onMessage: (content: string) => void
 }
 
+// 获取会话列表
+export async function getConversations() {
+  const response = await fetch('/api/conversations')
+
+  if (!response.ok) {
+    throw new Error(`获取会话列表失败：HTTP ${response.status}`)
+  }
+
+  const result = (await response.json()) as ApiResponse<ConversationDTO[]>
+
+  return result.data
+}
+// 消息数据类型
+export interface MessageDTO {
+  id: string
+  conversation_id: string
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
+}
+
+// 获取指定会话的历史消息
+export async function getMessages(conversationId: string) {
+  const response = await fetch(`/api/conversations/${conversationId}/messages`)
+
+  if (!response.ok) {
+    throw new Error('获取历史消息失败')
+  }
+
+  const result = (await response.json()) as ApiResponse<MessageDTO[]>
+
+  return result.data
+}
+
+// 创建会话
+export async function createConversation(title?: string) {
+  const response = await fetch('/api/conversations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`创建会话失败：HTTP ${response.status}`)
+  }
+
+  const result = (await response.json()) as ApiResponse<ConversationDTO>
+
+  return result.data
+}
+/**
+ * 更新会话标题
+ */
+export async function renameConversation(conversationId: string, title: string) {
+  const response = await fetch(`/api/conversations/${conversationId}/title`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title }),
+  })
+
+  if (!response.ok) {
+    throw new Error('更新会话标题失败')
+  }
+
+  const result = (await response.json()) as ApiResponse<ConversationDTO>
+
+  return result.data
+}
+// 删除会话
+export async function deleteConversation(id: string) {
+  const response = await fetch(`/api/conversations/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error(`删除会话失败：HTTP ${response.status}`)
+  }
+}
+
+// 流式聊天
 export async function streamChat(options: StreamOptions) {
-  const response = await fetch('/api/chat/stream', {
+  const response = await fetch(`/api/conversations/${options.conversationId}/chat/stream`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
     },
     body: JSON.stringify({
-      messages: options.messages.map(({ role, content }) => ({
-        role,
-        content,
-      })),
+      content: options.content,
     }),
     signal: options.signal,
   })

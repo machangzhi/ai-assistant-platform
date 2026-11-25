@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express'
 
 import { chatWithAI } from '../services/chat.service.js'
 import { streamDeepSeek } from '../ai/models/deepseek.js'
+import * as conversationChatService from '../services/chat.service.js'
 
 export async function chat(req: Request, res: Response, next: NextFunction) {
   try {
@@ -118,5 +119,77 @@ export async function streamChat(req: Request, res: Response, next: NextFunction
     }
   } finally {
     res.off('close', onClose)
+  }
+}
+
+export async function chatWithConversation(req: Request, res: Response) {
+  const conversationId = req.params.id
+  const content = req.body?.content
+
+  if (typeof conversationId !== 'string' || !conversationId.trim()) {
+    return res.status(400).json({
+      code: 400,
+      message: '会话 ID 不合法',
+    })
+  }
+
+  if (typeof content !== 'string' || !content.trim()) {
+    return res.status(400).json({
+      code: 400,
+      message: '消息内容不能为空',
+    })
+  }
+  //   这里有一个细节：
+  // - 正常生成完成时，执行 res.end()，writableEnded 会变成 true。
+  // - 如果客户端提前关闭连接，writableEnded 通常仍然是 false，这时才取消上游请求。
+  const abortController = new AbortController()
+  res.on('close', () => {
+    if (!res.writableEnded) {
+      abortController.abort()
+    }
+  })
+
+  try {
+    // 设置 SSE 响应头
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8')
+    res.setHeader('Cache-Control', 'no-cache, no-transform')
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('X-Accel-Buffering', 'no')
+
+    res.flushHeaders()
+
+    let answer = ''
+
+    for await (const chunk of conversationChatService.chatWithConversation(
+      conversationId,
+      content,
+      abortController.signal,
+    )) {
+      answer += chunk
+
+      res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`)
+    }
+
+    res.write('data: [DONE]\n\n')
+    res.end()
+  } catch (error) {
+    console.error('会话聊天失败：', error)
+    if (abortController.signal.aborted) {
+      return
+    }
+    if (!res.headersSent) {
+      return res.status(500).json({
+        code: 500,
+        message: '聊天请求失败',
+      })
+    }
+
+    res.write(
+      `event: error\ndata: ${JSON.stringify({
+        message: 'AI 生成失败',
+      })}\n\n`,
+    )
+
+    res.end()
   }
 }

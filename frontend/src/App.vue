@@ -1,6 +1,18 @@
 <script setup lang="ts">
 import ChatSidebar from './components/ChatSidebar.vue'
 import ChatMain from './components/ChatMain.vue'
+import { onMounted } from 'vue'
+import { useChatStore } from './stores/chat'
+
+const chatStore = useChatStore()
+
+onMounted(async () => {
+  try {
+    await chatStore.initialize()
+  } catch (error) {
+    console.error('聊天数据初始化失败：', error)
+  }
+})
 </script>
 
 <template>
