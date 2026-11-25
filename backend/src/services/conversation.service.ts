@@ -1,4 +1,4 @@
-import * as conversationRepository from '../repositories/conversation.repository'
+import * as conversationRepository from '../repositories/conversation.repository.js'
 
 /**
  * 创建会话

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import * as conversationController from '../controllers/conversation.controller'
+import * as conversationController from '../controllers/conversation.controller.js'
 import * as chatController from '../controllers/chat.controller.js'
 
 const router = Router()

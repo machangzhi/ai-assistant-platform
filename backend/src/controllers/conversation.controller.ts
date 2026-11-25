@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import * as conversationService from '../services/conversation.service'
+import * as conversationService from '../services/conversation.service.js'
 function getConversationId(req: Request): string | null {
   const id = req.params.id
 

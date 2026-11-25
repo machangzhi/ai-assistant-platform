@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
-import * as messageRepository from '../repositories/message.repository'
-import * as conversationRepository from '../repositories/conversation.repository'
+import * as messageRepository from '../repositories/message.repository.js'
+import * as conversationRepository from '../repositories/conversation.repository.js'
 
 type MessageRole = 'user' | 'assistant'
 

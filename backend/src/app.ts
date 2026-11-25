@@ -6,9 +6,9 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import userRoutes from './routes/user.routes.js'
 import chatRoutes from './routes/chat.routes.js'
-import databaseRoutes from './routes/database.routes'
-import conversationRoutes from './routes/conversation.routes'
-import messageRoutes from './routes/message.routes'
+import databaseRoutes from './routes/database.routes.js'
+import conversationRoutes from './routes/conversation.routes.js'
+import messageRoutes from './routes/message.routes.js'
 import { errorHandler } from './middlewares/error.middleware.js'
 
 const app = express()
